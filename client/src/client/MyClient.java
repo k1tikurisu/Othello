@@ -10,6 +10,8 @@ import javax.swing.*;
 import java.util.*;
 
 public class MyClient extends JFrame {
+	private JButton buttonArray[][];
+	private ImageIcon black, white, board;
   private Container c;
   PrintWriter out;
 
@@ -30,10 +32,34 @@ public class MyClient extends JFrame {
 		//ウィンドウを作成する
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setTitle("Othello Game");
-		setSize(800, 600);
+		setSize(1000, 750);
 		c = getContentPane();
+
+		white = new ImageIcon("./resources/white.png");
+		black = new ImageIcon("./resources/black.png");
+		board = new ImageIcon("./resources/board.png");
+		
+		// 自動レイアウトの設定を行わない
     c.setLayout(null);
 
+		// 盤面を作成する
+		buttonArray = new JButton[8][8];
+		for (int j = 0; j < 8; j++) {
+			for (int i = 0; i < 8; i++) {
+				buttonArray[i][j] = new JButton(board);
+				// ボーダーを消す
+				buttonArray[i][j].setBorderPainted(false);
+				c.add(buttonArray[i][j]);
+				buttonArray[i][j].setBounds(i*50+300, j*50+150, 50, 50);
+			}
+		}
+		
+		// 初期配置
+		buttonArray[4][3].setIcon(white);
+		buttonArray[4][4].setIcon(black);
+		buttonArray[3][4].setIcon(white);
+		buttonArray[3][3].setIcon(black);
+		
 		//サーバに接続する
 		Socket socket = null;
 		try {
@@ -77,12 +103,4 @@ public class MyClient extends JFrame {
 		MyClient net = new MyClient();
 		net.setVisible(true);
 	}
-
-	public void mouseClicked(MouseEvent e) {}
-	public void mouseEntered(MouseEvent e) {}
-	public void mouseExited(MouseEvent e) {}
-	public void mousePressed(MouseEvent e) {}
-	public void mouseReleased(MouseEvent e) {}
-	public void mouseDragged(MouseEvent e) {}
-	public void mouseMoved(MouseEvent e) {}
 }
