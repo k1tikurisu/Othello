@@ -9,9 +9,12 @@ import java.awt.event.*;
 import javax.swing.*;
 import java.util.*;
 
-public class MyClient extends JFrame {
+public class MyClient extends JFrame implements MouseListener, MouseMotionListener {
 	private JButton buttonArray[][];
 	private ImageIcon black, white, board;
+	private ImageIcon myIcon, yourIcon;
+	private int myColor;
+	private int myTurn;
   private Container c;
   PrintWriter out;
 
@@ -51,6 +54,8 @@ public class MyClient extends JFrame {
 				buttonArray[i][j].setBorderPainted(false);
 				c.add(buttonArray[i][j]);
 				buttonArray[i][j].setBounds(i*50+300, j*50+150, 50, 50);
+				buttonArray[i][j].addMouseListener(this);
+				buttonArray[i][j].setActionCommand(Integer.toString(j*8+i));
 			}
 		}
 		
@@ -92,6 +97,74 @@ public class MyClient extends JFrame {
 				BufferedReader br = new BufferedReader(sisr);
 				out = new PrintWriter(socket.getOutputStream(), true);
 				out.println(myName);
+				// サーバーが送った番号をint型で受け取る
+				int myNumberInt = Integer.parseInt(br.readLine());
+				
+				// サーバーが送った数値の偶奇で黒か白かを変える
+				if (myNumberInt % 2 == 0) {
+					myColor = 0;
+					myTurn = 0;
+					myIcon = black;
+					yourIcon = white;
+				} else {
+					myColor = 1;
+					myTurn = 1;
+					myIcon = white;
+					yourIcon = black;
+				}
+
+				while (true) {
+					String inputLine = br.readLine();
+					if (inputLine != null) {
+						String[] inputTokens = inputLine.split(" ");
+						String cmd = inputTokens[0];
+
+						// 駒を置く処理
+						if (cmd.equals("PLACE")) {
+							// PLACE ボタンの番号 色 
+							int theButtonName = Integer.parseInt(inputTokens[1]);
+							int theColor = Integer.parseInt(inputTokens[2]);
+
+							// 座標に戻す
+							int x = theButtonName / 8;
+							int y = theButtonName % 8;
+
+							// アイコンを変更する
+							if (theColor == myColor) {
+								// 送信元クライアントでの処理
+								buttonArray[y][x].setIcon(myIcon);
+							} else {
+								// 送信先クライアントでの処理
+								buttonArray[y][x].setIcon(yourIcon);
+							}
+
+							// ターン切り替え
+							myTurn = 1 - myTurn;
+						}
+
+						// 駒をひっくり返す処理
+						if (cmd.equals("FLIP")) {
+							// FLIP ボタンの番号 色 
+							int theButtonName = Integer.parseInt(inputTokens[1]);
+							int theColor = Integer.parseInt(inputTokens[2]);
+
+							// 座標に戻す
+							int x = theButtonName / 8;
+							int y = theButtonName % 8;
+
+							// アイコンを変更する
+							if (theColor == myColor) {
+								// 送信元クライアントでの処理
+								buttonArray[y][x].setIcon(myIcon);
+							} else {
+								// 送信先クライアントでの処理
+								buttonArray[y][x].setIcon(yourIcon);
+							}
+						}
+					} else {
+						break;
+					}
+				}
 				socket.close();
 			} catch (IOException e) {
 				System.err.println("エラーが発生しました: " + e);
@@ -103,4 +176,85 @@ public class MyClient extends JFrame {
 		MyClient net = new MyClient();
 		net.setVisible(true);
 	}
+
+	// クリックしたときの処理
+	public void mouseClicked(MouseEvent e) {
+		JButton theButton = (JButton) e.getComponent();
+		// アイコンの配列の番号を取得
+		int theArrayIndex = Integer.parseInt(theButton.getActionCommand());
+		Icon theIcon = theButton.getIcon();
+
+		if (myTurn == 1 && theIcon == board) {
+			// 座標に戻す
+			int x = theArrayIndex / 8;
+			int y = theArrayIndex % 8;
+
+			if (judgeButton(y, x)) {
+				// 置ける
+				String msg = "PLACE" + " " + theArrayIndex + " " + myColor;
+				
+				// サーバに情報を送る
+				out.println(msg);
+				out.flush();
+
+				// 画面のオブジェクトを描画しなおす
+				repaint();
+			}
+		}	
+	}
+
+	// 裏返りの発生する駒かどうかの判定
+	public boolean judgeButton(int y, int x) {
+		boolean flag = false;
+		for (int i = -1; i <= 1; i++) {
+			for (int j = -1; j <= 1; j++) {
+				// ひっくり返せる駒が一つ以上あれば
+				if (flipButtons(y, x, j, i) >= 1) {
+					flag = true;
+				}
+			}
+		}
+		return flag;
+	}
+
+	// 一方向にある駒群を裏返す命令を送る
+	public int flipButtons(int y, int x, int j, int i) {
+		int flipNum = 0;
+		int k;
+
+		for (int dy = j, dx = i; ; dy += j, dx += i) {
+			// 場外
+			if (y+dy < 0 || y+dy >= 8 || x+dx < 0 || x+dx >= 8) {
+				return 0;
+			}
+			// この位置のアイコンを取得する
+			Icon icon = buttonArray[y+dy][x+dx].getIcon();
+
+			if (icon == board) {
+				return 0;
+			} else if (icon == myIcon) {
+				for (dy = j, dx=i, k=0; k<flipNum; k++, dy+=j, dx+=i) {
+					//ボタンの位置情報を作る
+					int msgy = y + dy;
+					int msgx = x + dx;
+					int theArrayIndex = msgy + msgx*8;
+					
+					//サーバに情報を送る
+					String msg = "FLIP"+" "+theArrayIndex+" "+myColor;
+					out.println(msg);
+					out.flush();
+				}
+				return flipNum;
+			} else if (icon == yourIcon) {
+				flipNum += 1;
+			}
+		} 
+	}
+
+	public void mouseEntered(MouseEvent e) {}
+	public void mouseExited(MouseEvent e) {}
+	public void mousePressed(MouseEvent e) {}
+	public void mouseReleased(MouseEvent e) {}
+	public void mouseDragged(MouseEvent e) {}
+	public void mouseMoved(MouseEvent e) {}
 }
