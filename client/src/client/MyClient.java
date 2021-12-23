@@ -11,6 +11,7 @@ import java.util.*;
 
 public class MyClient extends JFrame implements MouseListener, MouseMotionListener {
 	private JButton buttonArray[][];
+	private JLabel turn;
 	private ImageIcon black, white, board;
 	private ImageIcon myIcon, yourIcon;
 	private int myColor;
@@ -64,6 +65,11 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		buttonArray[4][4].setIcon(black);
 		buttonArray[3][4].setIcon(white);
 		buttonArray[3][3].setIcon(black);
+
+		// どっちのターンかを画面に表示する
+		turn = new JLabel();
+		c.add(turn);
+		turn.setBounds(0, 0, 150, 45);
 		
 		//サーバに接続する
 		Socket socket = null;
@@ -78,7 +84,7 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		MesgRecvThread mrt = new MesgRecvThread(socket, myName);
 		mrt.start();
 	}
-		
+  
 	//メッセージ受信のためのスレッド
 	public class MesgRecvThread extends Thread {
 		
@@ -106,11 +112,13 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 					myTurn = 0;
 					myIcon = black;
 					yourIcon = white;
+					turn.setText("相手のターンです");
 				} else {
 					myColor = 1;
 					myTurn = 1;
 					myIcon = white;
 					yourIcon = black;
+					turn.setText("あなたのターンです。");
 				}
 
 				while (true) {
@@ -133,9 +141,11 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 							if (theColor == myColor) {
 								// 送信元クライアントでの処理
 								buttonArray[y][x].setIcon(myIcon);
+								turn.setText("相手のターンです");
 							} else {
 								// 送信先クライアントでの処理
 								buttonArray[y][x].setIcon(yourIcon);
+								turn.setText("あなたのターンです");
 							}
 
 							// ターン切り替え
@@ -199,6 +209,7 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 
 				// 画面のオブジェクトを描画しなおす
 				repaint();
+
 			}
 		}	
 	}
