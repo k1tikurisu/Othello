@@ -12,6 +12,7 @@ import java.util.*;
 public class MyClient extends JFrame implements MouseListener, MouseMotionListener {
 	private JButton buttonArray[][];
 	private JLabel turn;
+	private JLabel counterWhite, counterBlack;
 	private ImageIcon black, white, board;
 	private ImageIcon myIcon, yourIcon;
 	private int myColor;
@@ -70,7 +71,15 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		turn = new JLabel();
 		c.add(turn);
 		turn.setBounds(0, 0, 150, 45);
-		
+
+		// どちらの駒が何個あるかを画面に表示する。
+		counterWhite = new JLabel("2");
+		counterBlack = new JLabel("2");
+		c.add(counterWhite);
+		c.add(counterBlack);
+		counterWhite.setBounds(200, 0, 50, 45);
+		counterBlack.setBounds(300, 0, 50, 45);
+
 		//サーバに接続する
 		Socket socket = null;
 		try {
@@ -148,6 +157,10 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 								turn.setText("あなたのターンです");
 							}
 
+							// 駒数の表示を変更
+							counterWhite.setText(Integer.toString(howManyIconExists()[0]));
+							counterBlack.setText(Integer.toString(howManyIconExists()[1]));
+							
 							// ターン切り替え
 							myTurn = 1 - myTurn;
 						}
@@ -260,6 +273,24 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 				flipNum += 1;
 			}
 		} 
+	}
+
+	public int[] howManyIconExists() {
+		// [white, black]
+		int[] counter = new int[2];
+		
+		for (int j = 0; j < 8; j++) {
+			for (int i = 0; i < 8; i++) {
+				Icon icon = buttonArray[i][j].getIcon();
+				if (icon == white) {
+					counter[0]++;
+				} else if (icon == black) {
+					counter[1]++;
+				}
+			}
+		}
+		
+		return counter;
 	}
 
 	public void mouseEntered(MouseEvent e) {}
