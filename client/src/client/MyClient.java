@@ -62,10 +62,7 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		}
 		
 		// 初期配置
-		buttonArray[4][3].setIcon(white);
-		buttonArray[4][4].setIcon(black);
-		buttonArray[3][4].setIcon(white);
-		buttonArray[3][3].setIcon(black);
+		initializeIcon(false);
 
 		// どっちのターンかを画面に表示する
 		turn = new JLabel();
@@ -232,6 +229,9 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		boolean flag = false;
 		for (int i = -1; i <= 1; i++) {
 			for (int j = -1; j <= 1; j++) {
+				if (i == 0 && j == 0) continue;
+				if (y+j < 0 || y+j >= 8 || x+i < 0 || x+i >= 8) continue;
+				
 				// ひっくり返せる駒が一つ以上あれば
 				if (flipButtons(y, x, j, i) >= 1) {
 					flag = true;
@@ -292,6 +292,22 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		
 		return counter;
 	}
+
+	public void initializeIcon(boolean isDebug) {
+		if (isDebug) {
+			// 自動パス実装用
+			for (int x = 0; x < 8; x++) {
+				buttonArray[x][1].setIcon(white);
+				buttonArray[x][0].setIcon(white);
+				buttonArray[x][2].setIcon(black);
+			}
+			return;
+		}
+		buttonArray[4][3].setIcon(white);
+		buttonArray[4][4].setIcon(black);
+		buttonArray[3][4].setIcon(white);
+		buttonArray[3][3].setIcon(black);
+	} 
 
 	public void mouseEntered(MouseEvent e) {}
 	public void mouseExited(MouseEvent e) {}
