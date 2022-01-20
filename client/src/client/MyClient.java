@@ -62,11 +62,18 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		}
 		
 		// 初期配置
-		buttonArray[4][3].setIcon(white);
-		buttonArray[4][4].setIcon(black);
-		buttonArray[3][4].setIcon(white);
-		buttonArray[3][3].setIcon(black);
-
+		// buttonArray[4][3].setIcon(white);
+		// buttonArray[4][4].setIcon(black);
+		// buttonArray[3][4].setIcon(white);
+		// buttonArray[3][3].setIcon(black);
+		
+		// 自動パスデバッグ用
+		for (int x = 0; x < 8; x++) {
+			buttonArray[x][1].setIcon(white);
+			buttonArray[x][0].setIcon(white);
+			buttonArray[x][2].setIcon(black);
+		}
+		
 		// どっちのターンかを画面に表示する
 		turn = new JLabel();
 		c.add(turn);
@@ -157,13 +164,23 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 								turn.setText("あなたのターンです");
 							}
 
+							
+							
+							// 置くところがないときはターンを切り替える
+							
+							System.out.println("パス");
 							// 駒数の表示を変更
 							counterWhite.setText(Integer.toString(howManyIconExists()[0]));
 							counterBlack.setText(Integer.toString(howManyIconExists()[1]));
 							
 							// ターン切り替え
 							myTurn = 1 - myTurn;
-						}
+							if (myTurn == 1 && judgePass()) {
+									System.out.println("パス");
+									myTurn = 1 - myTurn;
+									break;
+								}
+							}
 
 						// 駒をひっくり返す処理
 						if (cmd.equals("FLIP")) {
@@ -227,24 +244,42 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		}	
 	}
 
-	// 裏返りの発生する駒かどうかの判定
+	// 裏返りの発生する駒かどうかの判定 & ひっくり返す処理
 	public boolean judgeButton(int y, int x) {
 		boolean flag = false;
 		for (int i = -1; i <= 1; i++) {
 			for (int j = -1; j <= 1; j++) {
+				if ((j == 0) && (i == 0)) continue;
+				if (y+j < 0 || y+j >= 8 || x+i < 0 || x+i >= 8) {
+					continue;
+				}
+				
 				// ひっくり返せる駒が一つ以上あれば
-				if (flipButtons(y, x, j, i) >= 1) {
+				if (countFlip(y, x, j, i) >= 1) {
 					flag = true;
+
+					for(int dy=j, dx=i, k=0; k<countFlip(y,x,j,i); k++, dy+=j, dx+=i){
+						//ボタンの位置情報を作る
+						int msgy = y + dy;
+						int msgx = x + dx;
+						int theArrayIndex = msgy + msgx*8;
+						
+						//サーバに情報を送る
+						String msg = "FLIP"+" "+theArrayIndex+" "+myColor;
+						out.println(msg);
+						out.flush();
+					}
 				}
 			}
 		}
 		return flag;
 	}
 
-	// 一方向にある駒群を裏返す命令を送る
-	public int flipButtons(int y, int x, int j, int i) {
+	// 何枚ひっくり返せるか
+	public int countFlip(int y, int x, int j, int i) {
 		int flipNum = 0;
-		int k;
+
+		if ((j == 0) && (i == 0)) return 0;
 
 		for (int dy = j, dx = i; ; dy += j, dx += i) {
 			// 場外
@@ -257,20 +292,9 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 			if (icon == board) {
 				return 0;
 			} else if (icon == myIcon) {
-				for (dy = j, dx=i, k=0; k<flipNum; k++, dy+=j, dx+=i) {
-					//ボタンの位置情報を作る
-					int msgy = y + dy;
-					int msgx = x + dx;
-					int theArrayIndex = msgy + msgx*8;
-					
-					//サーバに情報を送る
-					String msg = "FLIP"+" "+theArrayIndex+" "+myColor;
-					out.println(msg);
-					out.flush();
-				}
 				return flipNum;
 			} else if (icon == yourIcon) {
-				flipNum += 1;
+				flipNum++;
 			}
 		} 
 	}
@@ -291,6 +315,34 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		}
 		
 		return counter;
+	}
+
+	// 置けるかどうか
+	public boolean canSetIcon(int y, int x) {
+		for (int i = -1; i <= 1; i++) {
+			for (int j = -1; j <= 1; j++) {
+				if ((j == 0) && (i == 0)) continue;
+				
+				// ひっくり返せる駒が一つ以上あれば
+				if (countFlip(y, x, j, i) >= 1) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public boolean judgePass() {
+		for (int x = 0; x < 8; x++) {
+			for (int y = 0; y < 8; y++) {
+				Icon theIcon = buttonArray[x][y].getIcon();
+				if ((theIcon == board) && canSetIcon(y, x)) {
+					System.out.println(x + " " + y + "の位置に置けます。");
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	public void mouseEntered(MouseEvent e) {}
