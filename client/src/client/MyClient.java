@@ -13,10 +13,15 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 	private JButton buttonArray[][];
 	private JLabel turn;
 	private JLabel counterWhite, counterBlack;
+	private JLabel blackIconLabel, whiteIconLabel;
+	private JLabel arrowLabel;
 	private ImageIcon black, white, board;
 	private ImageIcon myIcon, yourIcon;
+	private ImageIcon blackIconImage, whiteIconImage;
+	private ImageIcon arrow;
 	private int myColor;
 	private int myTurn;
+	private boolean isWhiteTurn = false;
   private Container c;
   PrintWriter out;
 
@@ -46,7 +51,7 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		
 		// 自動レイアウトの設定を行わない
     c.setLayout(null);
-
+		
 		// 盤面を作成する
 		buttonArray = new JButton[8][8];
 		for (int j = 0; j < 8; j++) {
@@ -63,19 +68,37 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		
 		// 初期配置
 		initializeIcon(false);
-
+		
+		whiteIconImage = new ImageIcon("./resources/whiteIconImage.png");
+		blackIconImage = new ImageIcon("./resources/blackIconImage.png");
+		arrow = new ImageIcon("./resources/arrow.png");
+		whiteIconLabel = new JLabel(whiteIconImage);
+		blackIconLabel = new JLabel(blackIconImage);
+		arrowLabel = new JLabel(arrow);
+		c.add(whiteIconLabel);
+		c.add(blackIconLabel);
+		c.add(arrowLabel);
+		whiteIconLabel.setBounds(60, 230, 60, 60);
+		blackIconLabel.setBounds(170, 230, 60, 60);
+		arrowLabel.setBounds(30, 243, 30, 30);
+		
 		// どっちのターンかを画面に表示する
-		turn = new JLabel();
+		turn = new JLabel("You");
 		c.add(turn);
-		turn.setBounds(0, 0, 150, 45);
+		turn.setFont((new Font("Noto Sans", Font.BOLD, 18)));
+		turn.setForeground(new Color(133,133,133));
 
 		// どちらの駒が何個あるかを画面に表示する。
 		counterWhite = new JLabel("2");
 		counterBlack = new JLabel("2");
 		c.add(counterWhite);
 		c.add(counterBlack);
-		counterWhite.setBounds(200, 0, 50, 45);
-		counterBlack.setBounds(300, 0, 50, 45);
+		counterWhite.setFont((new Font("Noto Sans JP", Font.BOLD, 18)));
+		counterBlack.setFont((new Font("Noto Sans JP", Font.BOLD, 18)));
+		counterWhite.setForeground(new Color(133,133,133));
+		counterBlack.setForeground(new Color(133,133,133));
+		counterWhite.setBounds(85, 280, 50, 45);
+		counterBlack.setBounds(195, 280, 50, 45);
 
 		//サーバに接続する
 		Socket socket = null;
@@ -118,13 +141,13 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 					myTurn = 0;
 					myIcon = black;
 					yourIcon = white;
-					turn.setText("相手のターンです");
+					turn.setBounds(183, 190, 60, 30);
 				} else {
 					myColor = 1;
 					myTurn = 1;
 					myIcon = white;
 					yourIcon = black;
-					turn.setText("あなたのターンです。");
+					turn.setBounds(73, 190, 60, 30);
 				}
 
 				while (true) {
@@ -147,19 +170,20 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 							if (theColor == myColor) {
 								// 送信元クライアントでの処理
 								buttonArray[y][x].setIcon(myIcon);
-								turn.setText("相手のターンです");
 							} else {
 								// 送信先クライアントでの処理
 								buttonArray[y][x].setIcon(yourIcon);
-								turn.setText("あなたのターンです");
 							}
 
 							// 駒数の表示を変更
 							counterWhite.setText(Integer.toString(howManyIconExists()[0]));
 							counterBlack.setText(Integer.toString(howManyIconExists()[1]));
 							
+							
 							// ターン切り替え
 							myTurn = 1 - myTurn;
+							isWhiteTurn = !isWhiteTurn;
+							changeTurn(isWhiteTurn);
 						}
 
 						// 駒をひっくり返す処理
@@ -308,6 +332,14 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		buttonArray[3][4].setIcon(white);
 		buttonArray[3][3].setIcon(black);
 	} 
+
+	public void changeTurn(boolean isWhite) {
+		if (isWhite) {
+			arrowLabel.setBounds(140, 243, 30, 30);
+		} else {
+			arrowLabel.setBounds(30, 243, 30, 30);
+		}
+	}
 
 	public void mouseEntered(MouseEvent e) {}
 	public void mouseExited(MouseEvent e) {}
