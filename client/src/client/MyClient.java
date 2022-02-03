@@ -364,7 +364,7 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 				}
 			}
 		}
-		// パス
+		// 勝敗判定
 		String msg = "JUDGE";
 		// サーバに情報を送る
 		out.println(msg);
