@@ -15,6 +15,7 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 	private JLabel counterWhite, counterBlack;
 	private JLabel blackIconLabel, whiteIconLabel;
 	private JLabel arrowLabel;
+	private JLabel winner, loser;
 	private ImageIcon black, white, board;
 	private ImageIcon myIcon, yourIcon;
 	private ImageIcon blackIconImage, whiteIconImage;
@@ -156,6 +157,10 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 						String[] inputTokens = inputLine.split(" ");
 						String cmd = inputTokens[0];
 
+						if (cmd.equals("JUDGE")) {
+							judgement();
+						}
+
 						if (cmd.equals("PASS")) {
 							myTurn = 1 - myTurn;
 							isWhiteTurn = !isWhiteTurn;
@@ -193,6 +198,9 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 
 							// パスが発生するか判定
 							isPass();
+
+							// 両方置けなかったら勝敗判定
+							isJudge();
 						}
 
 						// 駒をひっくり返す処理
@@ -345,6 +353,26 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		return true;
 	}
 
+	public boolean isJudge() {
+		if (myTurn != 1) return false;
+
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				if (buttonArray[j][i].getIcon() != board) continue;
+				if (canSetIcon(j, i)) {
+					return false;
+				}
+			}
+		}
+		// パス
+		String msg = "JUDGE";
+		// サーバに情報を送る
+		out.println(msg);
+		out.flush();
+
+		return true;
+	}
+
 	public int[] howManyIconExists() {
 		// [white, black]
 		int[] counter = new int[2];
@@ -385,6 +413,34 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		} else {
 			arrowLabel.setBounds(30, 243, 30, 30);
 		}
+	}
+
+	public void judgement() {
+		winner = new JLabel("You WIN!!");
+		loser = new JLabel("You LOSE...");
+
+		boolean winWhite = howManyIconExists()[0] > howManyIconExists()[1];
+		boolean isColorWhite = myColor == 1;
+
+		// 画面を全部消す
+		c.removeAll();
+		repaint();
+
+		// 勝敗を表示
+		c.add(winner);
+		c.add(loser);
+		winner.setFont((new Font("Noto Sans JP", Font.BOLD, 50)));
+		loser.setFont((new Font("Noto Sans JP", Font.BOLD, 50)));
+		winner.setForeground(new Color(133,133,133));
+		loser.setForeground(new Color(133,133,133));
+
+		// 自分が白で白が勝つまたは自分が黒で黒が勝つ時
+		if ((winWhite && isColorWhite) || (!winWhite && !isColorWhite)) {
+			winner.setBounds(0,0,500,500);
+		} else {
+			loser.setBounds(0, 0, 500, 500);
+		}
+		repaint();
 	}
 
 	public void mouseEntered(MouseEvent e) {}
