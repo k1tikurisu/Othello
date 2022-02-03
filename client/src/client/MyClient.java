@@ -156,6 +156,12 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 						String[] inputTokens = inputLine.split(" ");
 						String cmd = inputTokens[0];
 
+						if (cmd.equals("PASS")) {
+							myTurn = 1 - myTurn;
+							isWhiteTurn = !isWhiteTurn;
+							changeTurn(isWhiteTurn);
+						}
+
 						// 駒を置く処理
 						if (cmd.equals("PLACE")) {
 							// PLACE ボタンの番号 色 
@@ -184,6 +190,9 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 							myTurn = 1 - myTurn;
 							isWhiteTurn = !isWhiteTurn;
 							changeTurn(isWhiteTurn);
+
+							// パスが発生するか判定
+							isPass();
 						}
 
 						// 駒をひっくり返す処理
@@ -257,7 +266,7 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 				if (y+j < 0 || y+j >= 8 || x+i < 0 || x+i >= 8) continue;
 				
 				// ひっくり返せる駒が一つ以上あれば
-				if (flipButtons(y, x, j, i) >= 1) {
+				if (flipButtons(y, x, j, i, true) >= 1) {
 					flag = true;
 				}
 			}
@@ -266,7 +275,7 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 	}
 
 	// 一方向にある駒群を裏返す命令を送る
-	public int flipButtons(int y, int x, int j, int i) {
+	public int flipButtons(int y, int x, int j, int i, boolean isFlip) {
 		int flipNum = 0;
 		int k;
 
@@ -281,6 +290,7 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 			if (icon == board) {
 				return 0;
 			} else if (icon == myIcon) {
+				if (!isFlip) return flipNum;
 				for (dy = j, dx=i, k=0; k<flipNum; k++, dy+=j, dx+=i) {
 					//ボタンの位置情報を作る
 					int msgy = y + dy;
@@ -297,6 +307,42 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 				flipNum += 1;
 			}
 		} 
+	}
+
+	public boolean canSetIcon(int y, int x) {
+		boolean flag = false;
+		for (int i = -1; i <= 1; i++) {
+			for (int j = -1; j <= 1; j++) {
+				if (i == 0 && j == 0) continue;
+				if (y+j < 0 || y+j >= 8 || x+i < 0 || x+i >= 8) continue;
+				
+				// ひっくり返せる駒が一つ以上あれば
+				if (flipButtons(y, x, j, i, false) >= 1) {
+					flag = true;
+				}
+			}
+		}
+		return flag;
+	}
+
+	public boolean isPass() {
+		if (myTurn != 1) return false;
+
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				if (buttonArray[j][i].getIcon() != board) continue;
+				if (canSetIcon(j, i)) {
+					return false;
+				}
+			}
+		}
+		// パス
+		String msg = "PASS";
+		// サーバに情報を送る
+		out.println(msg);
+		out.flush();
+
+		return true;
 	}
 
 	public int[] howManyIconExists() {
