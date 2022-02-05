@@ -3,11 +3,8 @@ package client;
 import java.net.*;
 import java.io.*;
 import javax.swing.*;
-import java.lang.*;
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.*;
-import java.util.*;
 
 public class MyClient extends JFrame implements MouseListener, MouseMotionListener {
 	private JButton buttonArray[][];
