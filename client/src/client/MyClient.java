@@ -46,12 +46,12 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		setSize(1000, 750);
 		c = getContentPane();
 
+		// 自動レイアウトの設定を行わない
+		c.setLayout(null);
+
 		white = new ImageIcon("./resources/white.png");
 		black = new ImageIcon("./resources/black.png");
 		board = new ImageIcon("./resources/board.png");
-		
-		// 自動レイアウトの設定を行わない
-    c.setLayout(null);
 		
 		// 盤面を作成する
 		buttonArray = new JButton[8][8];
@@ -429,16 +429,16 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		// 勝敗を表示
 		c.add(winner);
 		c.add(loser);
-		winner.setFont((new Font("Noto Sans JP", Font.BOLD, 50)));
-		loser.setFont((new Font("Noto Sans JP", Font.BOLD, 50)));
+		winner.setFont((new Font("Noto Sans JP", Font.BOLD, 100)));
+		loser.setFont((new Font("Noto Sans JP", Font.BOLD, 100)));
 		winner.setForeground(new Color(133,133,133));
 		loser.setForeground(new Color(133,133,133));
 
 		// 自分が白で白が勝つまたは自分が黒で黒が勝つ時
 		if ((winWhite && isColorWhite) || (!winWhite && !isColorWhite)) {
-			winner.setBounds(0,0,500,500);
+			winner.setBounds(250, 0, 500, 500);
 		} else {
-			loser.setBounds(0, 0, 500, 500);
+			loser.setBounds(250, 0, 800, 500);
 		}
 		repaint();
 	}
