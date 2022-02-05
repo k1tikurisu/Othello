@@ -7,6 +7,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class MyClient extends JFrame implements MouseListener, MouseMotionListener {
+	private String myName, myIpAddress;
 	private JButton buttonArray[][];
 	private JLabel turn;
 	private JLabel counterWhite, counterBlack;
@@ -25,19 +26,21 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
   private Container c;
   PrintWriter out;
 
-	public MyClient() {
-		//名前の入力ダイアログを開く
-		String myName = JOptionPane.showInputDialog(null, "名前を入力してください", "名前の入力", JOptionPane.QUESTION_MESSAGE);
-		// 名前の入力がないとき
-    if (myName.equals("")) {
-			myName = "No name";
-    }
-    
-    // IPアドレスを入力するダイアログを開く
-		String myIpAddress = JOptionPane.showInputDialog(null, "IPアドレスを入力してください", "IPアドレスの入力", JOptionPane.QUESTION_MESSAGE);
-    if (myIpAddress.equals("")) {
-			myIpAddress = "localhost";
-    }
+	public MyClient(boolean isFirst) {
+		if (isFirst) {
+			//名前の入力ダイアログを開く
+			myName = JOptionPane.showInputDialog(null, "名前を入力してください", "名前の入力", JOptionPane.QUESTION_MESSAGE);
+			// 名前の入力がないとき
+			if (myName.equals("")) {
+				myName = "No name";
+			}
+			
+			// IPアドレスを入力するダイアログを開く
+			myIpAddress = JOptionPane.showInputDialog(null, "IPアドレスを入力してください", "IPアドレスの入力", JOptionPane.QUESTION_MESSAGE);
+			if (myIpAddress.equals("")) {
+				myIpAddress = "localhost";
+			}
+		}
 
 		//ウィンドウを作成する
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -233,7 +236,7 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 	}
 
 	public static void main(String[] args) {
-		MyClient net = new MyClient();
+		MyClient net = new MyClient(true);
 		net.setVisible(true);
 	}
 
@@ -249,6 +252,13 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 			Window w = SwingUtilities.getWindowAncestor(c);
 			w.dispose();
 			System.exit(1);
+		}
+
+		if (theArrayIndex == 1000) {
+			Window w = SwingUtilities.getWindowAncestor(c);
+			w.dispose();
+			MyClient net = new MyClient(false);
+			net.setVisible(true);
 		}
 
 		if (myTurn == 1 && theIcon == board) {
