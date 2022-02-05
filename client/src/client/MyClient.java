@@ -20,6 +20,8 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 	private ImageIcon myIcon, yourIcon;
 	private ImageIcon blackIconImage, whiteIconImage;
 	private ImageIcon arrow;
+	private ImageIcon finish, again;
+	private JButton finishButton, againButton;
 	private int myColor;
 	private int myTurn;
 	private boolean isWhiteTurn = false;
@@ -245,6 +247,13 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		int theArrayIndex = Integer.parseInt(theButton.getActionCommand());
 		Icon theIcon = theButton.getIcon();
 
+		// finish buttonが押されたときの処理
+		if (theArrayIndex == 1001) {
+			Window w = SwingUtilities.getWindowAncestor(c);
+			w.dispose();
+			System.exit(1);
+		}
+
 		if (myTurn == 1 && theIcon == board) {
 			// 座標に戻す
 			int x = theArrayIndex / 8;
@@ -418,6 +427,12 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 	public void judgement() {
 		winner = new JLabel("You WIN!!");
 		loser = new JLabel("You LOSE...");
+		finish = new ImageIcon("./resources/finish.png");
+		again = new ImageIcon("./resources/again.png");
+		finishButton = new JButton(finish);
+		againButton = new JButton(again);
+		finishButton.setBorderPainted(false);
+		againButton.setBorderPainted(false);
 
 		boolean winWhite = howManyIconExists()[0] > howManyIconExists()[1];
 		boolean isColorWhite = myColor == 1;
@@ -429,17 +444,31 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		// 勝敗を表示
 		c.add(winner);
 		c.add(loser);
+		c.add(againButton);
+		c.add(finishButton);
 		winner.setFont((new Font("Noto Sans JP", Font.BOLD, 100)));
 		loser.setFont((new Font("Noto Sans JP", Font.BOLD, 100)));
 		winner.setForeground(new Color(133,133,133));
 		loser.setForeground(new Color(133,133,133));
+		finishButton.setBackground(Color.WHITE);
+		againButton.setBackground(Color.WHITE);
 
 		// 自分が白で白が勝つまたは自分が黒で黒が勝つ時
 		if ((winWhite && isColorWhite) || (!winWhite && !isColorWhite)) {
-			winner.setBounds(250, 0, 500, 500);
+			winner.setBounds(250, 200, 500, 150);
 		} else {
-			loser.setBounds(250, 0, 800, 500);
+			loser.setBounds(250, 200, 600, 150);
 		}
+
+		againButton.setBounds(330, 420, 130, 46);
+		finishButton.setBounds(530, 420, 130, 46);
+		againButton.addMouseListener(this);
+		finishButton.addMouseListener(this);
+		againButton.setActionCommand("1000");
+		finishButton.setActionCommand("1001");
+		againButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		finishButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
 		repaint();
 	}
 
