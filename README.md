@@ -1,5 +1,4 @@
 # Othello
-<<<<<<< Updated upstream
 Making Othello game with java  
 
 ## Syllabus for this exercise
