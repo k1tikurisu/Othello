@@ -192,7 +192,6 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 							counterWhite.setText(Integer.toString(howManyIconExists()[0]));
 							counterBlack.setText(Integer.toString(howManyIconExists()[1]));
 							
-							
 							// ターン切り替え
 							myTurn = 1 - myTurn;
 							isWhiteTurn = !isWhiteTurn;
@@ -201,7 +200,8 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 							// パスが発生するか判定
 							isPass();
 
-							// 両方置けなかったら勝敗判定
+							// 二連続でパスが発生したら(双方が置けなかったら)勝敗判定
+							// 内部はisPassとほとんど同じ 
 							isJudge();
 						}
 
@@ -299,6 +299,7 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 	}
 
 	// 一方向にある駒群を裏返す命令を送る
+	// isFlipがtrueだと、FLIPメッセージが送られる
 	public int flipButtons(int y, int x, int j, int i, boolean isFlip) {
 		int flipNum = 0;
 		int k;
@@ -333,6 +334,7 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		} 
 	}
 
+	// 駒を置けるかどうか
 	public boolean canSetIcon(int y, int x) {
 		boolean flag = false;
 		for (int i = -1; i <= 1; i++) {
@@ -349,6 +351,7 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		return flag;
 	}
 
+	// 自分の番の時に駒を置けるかどうか（パスが発生するかどうか）を判定する。
 	public boolean isPass() {
 		if (myTurn != 1) return false;
 
@@ -431,6 +434,7 @@ public class MyClient extends JFrame implements MouseListener, MouseMotionListen
 		}
 	}
 
+	// 勝敗判定画面
 	public void judgement() {
 		winner = new JLabel("You WIN!!");
 		loser = new JLabel("You LOSE...");
